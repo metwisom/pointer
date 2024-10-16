@@ -1,81 +1,94 @@
-import {Point} from "./point";
-import {calculateDistance} from "./calculateDistance";
-import {calculateAngle} from "./calculateAngle";
-import {getSide} from "./getSide";
-import {Display} from "./display";
-import {World} from "./world";
+import { Point } from "./point";
+// import { calculateDistance } from "./calculateDistance";
+// import { calculateAngle } from "./calculateAngle";
+// import { getSide } from "./getSide";
+import { Display } from "./display";
+import { World } from "./world";
 
-document.addEventListener("DOMContentLoaded",() =>{
-
-    const points:Point[] = []
+import * as mathFunctions from './math_functions.js';
 
 
+
+
+const points: Point[] = [];
+
+
+
+function getRandom() {
+    const a = [];
     for (let i = 0; i < 10; i++) {
-        points.push(new Point())
-    }
-
-
-    Display.init('display')
-    Display.start((ctx: CanvasRenderingContext2D) => {
-        ctx.clearRect(0, 0, World.width, World.height)
-        for (const i in points) {
-            const item = points[i]
-            ctx.fillRect(item.x - item.mass, item.y - item.mass, item.mass * 2, item.mass * 2);
+        if (points.length === 0) return a; // проверка, что массив не пуст
+        const randomIndex = Math.round(Math.random() * (points.length - 1));
+        const g = Math.round(Math.abs(points[randomIndex].x) / World.width * 10);
+        if (a[g] == undefined) {
+            a[g] = 0;
         }
-    })
+        a[g]++;
+    }
+    return a;
+}
 
+document.addEventListener("click", () => {
+    console.log(getRandom());
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    for (let i = 0; i < 300; i++) {
+        points.push(new Point());
+    }
+  
+    Display.init("display");
+    Display.start((ctx: CanvasRenderingContext2D) => {
+        ctx.clearRect(0, 0, World.width, World.height);
+        for (const item of points) {
+            ctx.beginPath();
+            ctx.arc(item.x  - item.mass, item.y - item.mass, item.mass * 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#f9f';
+            ctx.fill();
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+    });
 
     function draw() {
-        for (const i in points) {
-            const item = points[i]
+        points[0].speed = 0;
+        points[0].mass = 100;
+        points[0].x = World.width / 2;
+        points[0].y = World.height / 2;
+    
+        for (const item of points) {
             if (!item.isActive) {
-                continue
+                continue;
             }
-            // if (item.mass > 5) {
-            //     for (let newitem = 0; newitem < item.mass + 1; newitem++) {
-            //
-            //         const pp = new Point()
-            //         pp.angle = Math.PI * 2 / (item.mass + 1) * newitem
-            //         pp.speed = 1
-            //         pp.x = item.x + Math.cos(Math.PI * 2 / (item.mass + 1) * newitem) * 10
-            //         pp.y = item.y + Math.sin(Math.PI * 2 / (item.mass + 1) * newitem) * 10
-            //
-            //     }
-            //     item.mass = 0
-            //     continue
-            // }
-            for (const index in points) {
-                const value = points[index]
-                if (value.mass == 0 || !value.isActive || index == i) {
-                    continue
+
+            for (const value of points) {
+                if (value.mass === 0 || !value.isActive || value === item) {
+                    continue;
                 }
-                const distance = calculateDistance(item, value) ?? 10
-                // if (distance < 1) {
-                //     if (item.mass > value.mass) {
-                //         item.mass += value.mass
-                //         value.mass = 0
-                //     } else {
-                //         value.mass += item.mass
-                //         item.mass = 0
-                //     }
-                //     continue
-                // }
-                const aang = calculateAngle(item, value, item.plan())
-                const side = getSide(item, value, item.plan())
-                item.angle -= (aang * side)
-                if(aang < Math.PI / 2){
-                    item.speed *= 1.1
-                }else{
-                    item.speed *= 0.9
+
+                const distance = mathFunctions.calculateDistance(item, value);
+
+                // Проверка существования метода plan
+                if (typeof item.plan === "function") {
+                    const aang = mathFunctions.calculateAngle(item, value, item.plan(distance));
+                    const side = mathFunctions.getSide(item, value, item.plan(distance));
+
+
+
+                    item.angle -= (aang * side) /5000000  * 10 * item.mass;
+
+                    if (aang < Math.PI / 2) {
+                        item.speed += (3 - item.speed / 3) / (10000  / item.mass);
+                    } else {
+                        item.speed -= item.speed / 3 / 100 / (10000 / item.mass);
+                    }
                 }
             }
-            item.move()
+
+            item.move();
         }
     }
 
-    setInterval(draw, 1)
-
-
-
-
-})
+    setInterval(draw, 1);
+});

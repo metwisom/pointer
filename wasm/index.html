@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple WASM Example</title>
+</head>
+<body>
+  <h1>Simple WebAssembly Example</h1>
+  <button id="testJs">Test JavaScript</button>
+  <button id="testWasm">Test WebAssembly</button>
+  <p id="result"></p>
+
+  <script>
+    // Функция для загрузки WebAssembly модуля
+    async function loadWasm() {
+      const response = await fetch('fibonacci.wasm');
+      const bytes = await response.arrayBuffer();
+      const { instance } = await WebAssembly.instantiate(bytes);
+      return instance;
+    }
+
+    document.getElementById('testJs').onclick = () => {
+      const start = performance.now();
+      const worker = new Worker('fibonacci1.js');
+      worker.onmessage = function(e) {
+        const end = performance.now();
+        document.getElementById('result').textContent = `JavaScript: ${e.data} in ${end - start}ms`;
+      }
+      worker.postMessage(30); // Calculate fibonacci(30)
+    }
+
+    // Запуск функции при нажатии кнопки
+    document.getElementById('testWasm').addEventListener('click', async () => {
+        const wasmInstance = await loadWasm();
+        const fibonacci = wasmInstance.exports.add;
+        const start = performance.now();
+
+        const result = fibonacci(30);
+        const end = performance.now();
+        document.getElementById('result').textContent = `WebAssembly: ${result} in ${end - start}ms`;
+
+    });
+  </script>
+</body>
+</html>

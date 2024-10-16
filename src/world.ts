@@ -1,6 +1,6 @@
 const World = Object.freeze({
-    width: screen.width,
-    height: screen.height,
+    width: screen.availWidth * 3,
+    height: screen.availHeight * 3,
 })
 
 export {World}

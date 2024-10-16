@@ -8,7 +8,7 @@ function calculateAngle(point1: iPoint, point2: iPoint, point3: iPoint) {
     const dotProduct = ABx * ACx + ABy * ACy;
     const magnitudeAB = Math.sqrt(ABx * ABx + ABy * ABy);
     const magnitudeAC = Math.sqrt(ACx * ACx + ACy * ACy);
-    const cosTheta = dotProduct / (magnitudeAB * magnitudeAC);
+    const cosTheta = dotProduct / (magnitudeAB * magnitudeAC + 1);
     const angleRadians = Math.acos(cosTheta);
     const angleDegrees = angleRadians * (180 / Math.PI);
 
